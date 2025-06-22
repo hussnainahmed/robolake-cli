@@ -9,12 +9,13 @@ RoboLake CLI is a powerful command-line tool that transforms ROSbag files into a
 
 ## 🚀 Features
 
-- **📦 ROSbag Processing**: Read and convert ROS1/ROS2 bag files
+- **📦 Universal ROSbag Processing**: Read and convert any ROS1/ROS2 bag files with automatic field extraction
 - **🔄 Multiple Formats**: Export to Parquet, CSV, and JSON
 - **🗄️ Local Data Catalog**: Store and query converted data with SQL
 - **📊 Rich CLI**: Beautiful terminal interface with progress bars
 - **🔍 Topic Filtering**: Extract specific topics from ROSbag files
 - **⚡ Fast Processing**: Optimized for large robotics datasets
+- **🔧 Generic Field Extraction**: Automatically extracts all fields from any ROS message type
 
 ## 📦 Installation
 
@@ -186,45 +187,24 @@ robolake query ./my_data "SELECT COUNT(*) as total_messages FROM robot_data"
 robolake query ./my_data "SELECT MIN(x), MAX(x), AVG(y) FROM robot_data"
 ```
 
-## ⚠️ Limitations
+## 🔧 Generic Field Extraction
 
-### Supported Message Types
+RoboLake CLI now supports **universal field extraction** from any ROS message type:
 
-**Currently Supported for Field Extraction:**
-- `geometry_msgs/msg/PointStamped` - Extracts x, y, z coordinates
-- `sensor_msgs/msg/Image` - Extracts width, height, encoding, data_size
-- `sensor_msgs/msg/Imu` - Extracts acceleration and angular velocity
+### How It Works
 
-**Other Message Types:**
-- All other message types are processed but only basic metadata is extracted
-- Basic fields: `topic`, `timestamp`, `msgtype`, `header_timestamp` (if available)
-- No custom field extraction for unsupported message types
+- **Automatic Detection**: Uses Python introspection to discover all fields in any ROS message
+- **Nested Field Support**: Flattens nested structures using dot notation (e.g., `pose.position.x`)
+- **Array Handling**: Flattens arrays up to 5 elements, serializes longer arrays as JSON
+- **Universal Compatibility**: Works with standard ROS messages, custom messages, and third-party packages
 
-### Current Limitations
+### Example Output
 
-1. **Limited Message Type Support**: Only 3 specific message types have custom field extraction
-2. **No Generic Field Extraction**: Cannot automatically extract fields from unknown message types
-3. **ROS2-Focused**: Uses ROS2_FOXY typestore by default (may not be optimal for ROS1 bags)
-4. **No Apache Iceberg**: Iceberg functionality is declared but not implemented
-5. **Local Storage Only**: Data catalog is local-only, no cloud sync capabilities
-6. **Basic Error Handling**: Limited error recovery for corrupted or unsupported message types
-
-### Known Issues
-
-- **Large ROSbag Files**: May consume significant memory for very large files
-- **Complex Message Types**: Nested or complex message structures may not extract properly
-- **ROS1 Compatibility**: While supported, ROS1 bags may have limited field extraction
-- **Image Data**: Only extracts metadata, not actual image pixel data
-
-### Future Improvements
-
-- [ ] Add support for more message types (Pose, Twist, LaserScan, etc.)
-- [ ] Implement generic field extraction for unknown message types
-- [ ] Add ROS1/ROS2 automatic detection
-- [ ] Implement Apache Iceberg catalog functionality
-- [ ] Add cloud sync capabilities
-- [ ] Improve memory efficiency for large files
-- [ ] Add support for image data extraction
+For a `geometry_msgs/msg/PoseStamped` message, you'll get fields like:
+- `topic`, `timestamp`, `msgtype` (basic metadata)
+- `header.stamp.sec`, `header.stamp.nanosec` (nested header)
+- `pose.position.x`, `pose.position.y`, `pose.position.z` (nested position)
+- `pose.orientation.x`, `pose.orientation.y`, `pose.orientation.z`, `pose.orientation.w` (nested orientation)
 
 ## 🔧 Development
 

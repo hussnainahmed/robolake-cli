@@ -10,6 +10,7 @@ import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
 import logging
+import json
 
 # Try to import rosbags
 try:
@@ -131,6 +132,59 @@ class ROSbagProcessor:
         
         return pd.DataFrame(data)
     
+    def _flatten_ros_message(self, msg_obj, prefix=None, max_array_elements=5):
+        """
+        Recursively flatten a ROS message object into a flat dict.
+        - Nested fields use dot notation (e.g., pose.position.x)
+        - Arrays/lists are flattened up to max_array_elements, or serialized as JSON if longer
+        """
+        result = {}
+        prefix = prefix or ""
+        
+        # Handle different ROS message types
+        if hasattr(msg_obj, "__slots__"):
+            fields = msg_obj.__slots__
+        elif hasattr(msg_obj, "_fields_and_field_types"):
+            fields = msg_obj._fields_and_field_types.keys()
+        elif hasattr(msg_obj, "_type"):
+            # Handle some ROS1 message types
+            fields = [attr for attr in dir(msg_obj) if not attr.startswith('_') and not callable(getattr(msg_obj, attr))]
+        else:
+            # Not a ROS message object
+            return {prefix.rstrip("."): str(msg_obj)}
+        
+        for field in fields:
+            try:
+                value = getattr(msg_obj, field, None)
+                key = f"{prefix}{field}"
+                
+                if isinstance(value, (int, float, str, bool, type(None))):
+                    result[key] = value
+                elif isinstance(value, (list, tuple)):
+                    # Flatten up to max_array_elements, else serialize
+                    if len(value) <= max_array_elements:
+                        for i, v in enumerate(value):
+                            if isinstance(v, (int, float, str, bool, type(None))):
+                                result[f"{key}[{i}]"] = v
+                            else:
+                                result.update(self._flatten_ros_message(v, prefix=f"{key}[{i}].", max_array_elements=max_array_elements))
+                    else:
+                        # Serialize as JSON string
+                        try:
+                            result[key] = json.dumps(value)
+                        except Exception:
+                            result[key] = str(value)
+                elif hasattr(value, "__slots__") or hasattr(value, "_fields_and_field_types") or hasattr(value, "_type"):
+                    result.update(self._flatten_ros_message(value, prefix=f"{key}.", max_array_elements=max_array_elements))
+                else:
+                    result[key] = str(value)
+            except Exception as e:
+                # Log warning and continue with other fields
+                logging.debug(f"Error extracting field {field}: {e}")
+                result[f"{prefix}{field}"] = f"<error: {str(e)}>"
+        
+        return result
+    
     def _extract_message_data(self, reader, connection, timestamp, rawdata) -> Dict[str, Any]:
         """Extract data from ROSbag message"""
         try:
@@ -150,30 +204,9 @@ class ROSbagProcessor:
                 if hasattr(header_stamp, 'sec') and hasattr(header_stamp, 'nanosec'):
                     data["header_timestamp"] = header_stamp.sec + header_stamp.nanosec / 1e9
             
-            # Extract specific data based on message type
-            if connection.msgtype == 'geometry_msgs/msg/PointStamped':
-                if hasattr(msg_obj, 'point'):
-                    point = msg_obj.point
-                    data["x"] = point.x
-                    data["y"] = point.y
-                    data["z"] = point.z
-            elif connection.msgtype == 'sensor_msgs/msg/Image':
-                if hasattr(msg_obj, 'width') and hasattr(msg_obj, 'height'):
-                    data["width"] = msg_obj.width
-                    data["height"] = msg_obj.height
-                    data["encoding"] = msg_obj.encoding
-                    data["data_size"] = len(msg_obj.data) if hasattr(msg_obj, 'data') else 0
-            elif connection.msgtype == 'sensor_msgs/msg/Imu':
-                if hasattr(msg_obj, 'linear_acceleration'):
-                    acc = msg_obj.linear_acceleration
-                    data["accel_x"] = acc.x
-                    data["accel_y"] = acc.y
-                    data["accel_z"] = acc.z
-                if hasattr(msg_obj, 'angular_velocity'):
-                    gyro = msg_obj.angular_velocity
-                    data["gyro_x"] = gyro.x
-                    data["gyro_y"] = gyro.y
-                    data["gyro_z"] = gyro.z
+            # Generic flattening for all message types
+            flat_fields = self._flatten_ros_message(msg_obj)
+            data.update(flat_fields)
             
             return data
             
