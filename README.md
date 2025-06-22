@@ -169,27 +169,6 @@ Execute SQL queries against data catalogs.
 robolake query <catalog_path> <sql_query>
 ```
 
-## 📊 Supported Message Types
-
-RoboLake CLI automatically extracts data from common ROS message types:
-
-- **`geometry_msgs/msg/PointStamped`**: Position data (x, y, z)
-- **`sensor_msgs/msg/Image`**: Image metadata (width, height, encoding)
-- **`sensor_msgs/msg/Imu`**: IMU data (acceleration, angular velocity)
-- **`std_msgs/msg/Header`**: Timestamp information
-
-### ⚠️ Message Type Limitations
-
-**Currently Supported for Field Extraction:**
-- `geometry_msgs/msg/PointStamped` - Extracts x, y, z coordinates
-- `sensor_msgs/msg/Image` - Extracts width, height, encoding, data_size
-- `sensor_msgs/msg/Imu` - Extracts acceleration and angular velocity
-
-**Other Message Types:**
-- All other message types are processed but only basic metadata is extracted
-- Basic fields: `topic`, `timestamp`, `msgtype`, `header_timestamp` (if available)
-- No custom field extraction for unsupported message types
-
 ## 🗄️ Data Catalog
 
 The data catalog provides local SQL querying capabilities:
@@ -208,6 +187,18 @@ robolake query ./my_data "SELECT MIN(x), MAX(x), AVG(y) FROM robot_data"
 ```
 
 ## ⚠️ Limitations
+
+### Supported Message Types
+
+**Currently Supported for Field Extraction:**
+- `geometry_msgs/msg/PointStamped` - Extracts x, y, z coordinates
+- `sensor_msgs/msg/Image` - Extracts width, height, encoding, data_size
+- `sensor_msgs/msg/Imu` - Extracts acceleration and angular velocity
+
+**Other Message Types:**
+- All other message types are processed but only basic metadata is extracted
+- Basic fields: `topic`, `timestamp`, `msgtype`, `header_timestamp` (if available)
+- No custom field extraction for unsupported message types
 
 ### Current Limitations
 
