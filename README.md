@@ -223,8 +223,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 📞 Support
 
 - **Issues**: [GitHub Issues](https://github.com/hussnainahmed/robolake-cli/issues)
-- **Email**: team@ekai.ai
 
----
-
-**Made with ❤️ by [Ekai Labs](https://ekai.ai)** 

@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "robolake-cli"
 version = "0.1.0"
 description = "Robotics data processing platform - Convert ROSbag files to analytics-ready formats"
-authors = [{name = "Ekai Labs", email = "team@ekai.ai"}]
+authors = []
 readme = "README.md"
 requires-python = ">=3.9"
 license = {text = "MIT"}
