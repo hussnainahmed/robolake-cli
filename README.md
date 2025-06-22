@@ -18,6 +18,31 @@ RoboLake CLI is a powerful command-line tool that transforms ROSbag files into a
 
 ## 📦 Installation
 
+### Prerequisites
+
+- **Python**: 3.9 or higher
+- **Git**: For cloning the repository
+
+### Setup Virtual Environment (Recommended)
+
+```bash
+# Clone the repository
+git clone https://github.com/hussnainahmed/robolake-cli.git
+cd robolake-cli
+
+# Create virtual environment
+python -m venv .venv
+
+# Activate virtual environment
+# On Windows:
+.venv\Scripts\activate
+# On macOS/Linux:
+source .venv/bin/activate
+
+# Install the package
+pip install -e .
+```
+
 ### From Source (Development)
 
 ```bash
@@ -29,12 +54,14 @@ pip install -e .
 ### With ROSbag Support
 
 ```bash
+# Make sure virtual environment is activated
 pip install -e ".[rosbags]"
 ```
 
 ### With Full Features
 
 ```bash
+# Make sure virtual environment is activated
 pip install -e ".[rosbags,iceberg]"
 ```
 
@@ -219,6 +246,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [DuckDB](https://duckdb.org/) - Embedded analytical database
 - [Rich](https://rich.readthedocs.io/) - Beautiful terminal output
 - [Click](https://click.palletsprojects.com/) - Command line interface creation kit
+
 
 
 
