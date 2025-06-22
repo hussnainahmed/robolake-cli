@@ -220,7 +220,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [Rich](https://rich.readthedocs.io/) - Beautiful terminal output
 - [Click](https://click.palletsprojects.com/) - Command line interface creation kit
 
-## 📞 Support
 
-- **Issues**: [GitHub Issues](https://github.com/hussnainahmed/robolake-cli/issues)
 
